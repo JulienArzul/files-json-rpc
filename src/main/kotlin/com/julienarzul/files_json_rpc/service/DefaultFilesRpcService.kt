@@ -1,5 +1,6 @@
 package com.julienarzul.files_json_rpc.service
 
+import com.julienarzul.files_json_rpc.config.FilesProperties
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -12,14 +13,14 @@ import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
 @Service
-class DefaultFilesRpcService : FilesRpcService {
+class DefaultFilesRpcService(val filesProperties: FilesProperties) : FilesRpcService {
 
     companion object {
         val log: Logger = LoggerFactory.getLogger("DefaultFilesRpcService")
     }
 
     override fun createFile(filePath: String): String {
-        val path = Paths.get(filePath)
+        val path = Paths.get(filesProperties.rootPath, filePath)
 
         require(!path.exists()) {
             "A file or folder already exists at path $filePath"
@@ -33,7 +34,7 @@ class DefaultFilesRpcService : FilesRpcService {
     }
 
     override fun appendToFile(filePath: String, textToAppend: String) {
-        val path = Paths.get(filePath)
+        val path = Paths.get(filesProperties.rootPath, filePath)
 
         require(path.exists()) {
             "No file at path $filePath"
@@ -45,7 +46,7 @@ class DefaultFilesRpcService : FilesRpcService {
     }
 
     override fun readFile(filePath: String): String {
-        val path = Paths.get(filePath)
+        val path = Paths.get(filesProperties.rootPath, filePath)
 
         require(path.exists()) {
             "No file at path $filePath"
@@ -55,7 +56,7 @@ class DefaultFilesRpcService : FilesRpcService {
     }
 
     override fun deleteFile(filePath: String) {
-        val path = Paths.get(filePath)
+        val path = Paths.get(filesProperties.rootPath, filePath)
 
         require(path.exists()) {
             "No file at path $filePath"
