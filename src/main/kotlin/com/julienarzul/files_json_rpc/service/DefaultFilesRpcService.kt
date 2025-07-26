@@ -13,6 +13,7 @@ import kotlin.io.path.deleteExisting
 import kotlin.io.path.exists
 import kotlin.io.path.fileSize
 import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 import kotlin.io.path.pathString
 
@@ -26,6 +27,9 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLock
     override fun createFile(filePath: String): String {
         val path = getPath(filePath)
 
+        require(path.parent.exists()) {
+            "The file must be created in an existing directory"
+        }
         require(!path.exists()) {
             "A file or folder already exists at path $filePath"
         }
@@ -40,7 +44,7 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLock
     override fun appendToFile(filePath: String, textToAppend: String) {
         val path = getPath(filePath)
 
-        require(path.exists()) {
+        require(path.exists() && path.isRegularFile()) {
             "No file at path $filePath"
         }
 
@@ -61,7 +65,7 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLock
     override fun readFile(filePath: String, offset: Long, limit: Int): String {
         val path = getPath(filePath)
 
-        require(path.exists()) {
+        require(path.exists() && path.isRegularFile()) {
             "No file at path $filePath"
         }
 
