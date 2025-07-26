@@ -14,7 +14,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
 @Service
-class DefaultFilesRpcService(val filesProperties: FilesProperties) : FilesRpcService {
+class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLocks: FilesLocks) : FilesRpcService {
 
     companion object {
         val log: Logger = LoggerFactory.getLogger("DefaultFilesRpcService")
@@ -41,7 +41,12 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties) : FilesRpcSer
             "No file at path $filePath"
         }
 
-        path.appendText(textToAppend)
+        filesLocks.lockFile(path)
+        try {
+            path.appendText(textToAppend)
+        } finally {
+            filesLocks.unlock(path)
+        }
 
         log.info("Appended $textToAppend to file at path $filePath")
     }
