@@ -4,10 +4,10 @@ import com.julienarzul.files_json_rpc.config.FilesProperties
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.io.RandomAccessFile
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.appendText
-import kotlin.io.path.bufferedReader
 import kotlin.io.path.createFile
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.exists
@@ -55,13 +55,35 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLock
     }
 
     override fun readFile(filePath: String): String {
+        return readFile(filePath, 0, -1)
+    }
+
+    override fun readFile(filePath: String, offset: Long, limit: Int): String {
         val path = getPath(filePath)
 
         require(path.exists()) {
             "No file at path $filePath"
         }
 
-        return path.bufferedReader().use { it.readText() }
+        val file = RandomAccessFile(path.toFile(), "r")
+        val fileLength = file.length()
+        require(offset < fileLength) {
+            "Impossible to read at offset $offset: the file is not long enough"
+        }
+        require(offset + limit <= fileLength) {
+            "Impossible to read $limit bytes: the file is not long enough"
+        }
+
+        val bytesSize = if (limit > 0) limit else (fileLength - offset).toInt()
+        val stringBytes = ByteArray(bytesSize)
+        file.seek(offset)
+        file.use {
+            if (limit > 0)
+                it.readFully(stringBytes, 0, limit)
+            else
+                it.readFully(stringBytes)
+        }
+        return String(stringBytes)
     }
 
     override fun deleteFile(filePath: String) {
