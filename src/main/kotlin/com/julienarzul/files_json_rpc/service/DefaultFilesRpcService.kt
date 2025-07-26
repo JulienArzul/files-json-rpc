@@ -11,6 +11,9 @@ import kotlin.io.path.bufferedReader
 import kotlin.io.path.createFile
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.exists
+import kotlin.io.path.fileSize
+import kotlin.io.path.isDirectory
+import kotlin.io.path.name
 import kotlin.io.path.pathString
 
 @Service
@@ -71,6 +74,21 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLock
         path.deleteExisting()
 
         log.info("Deleted file at path $filePath")
+    }
+
+    override fun getFileInfo(filePath: String): FileInfo {
+        val path = getPath(filePath)
+
+        require(path.exists()) {
+            "No file at path $filePath"
+        }
+
+        return FileInfo(
+            fileName = path.name,
+            path = path.pathString,
+            size = path.fileSize(),
+            isDirectory = path.isDirectory()
+        )
     }
 
     private fun getPath(filePath: String): Path =

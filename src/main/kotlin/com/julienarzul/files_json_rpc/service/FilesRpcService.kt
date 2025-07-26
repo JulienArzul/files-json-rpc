@@ -8,4 +8,6 @@ interface FilesRpcService {
     fun readFile(filePath: String): String
 
     fun deleteFile(filePath: String)
+
+    fun getFileInfo(filePath: String): FileInfo
 }
