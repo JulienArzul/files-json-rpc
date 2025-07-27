@@ -8,13 +8,18 @@ import java.io.RandomAccessFile
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.appendText
+import kotlin.io.path.copyTo
+import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.exists
 import kotlin.io.path.fileSize
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.moveTo
 import kotlin.io.path.name
+import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 
 @Service
@@ -31,12 +36,29 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLock
             "The file must be created in an existing directory"
         }
         require(!path.exists()) {
-            "A file or folder already exists at path $filePath"
+            "A file or directory already exists at path $filePath"
         }
 
         val createdPath = path.createFile()
 
         log.info("Created file at path $filePath")
+
+        return createdPath.pathString
+    }
+
+    override fun createDirectory(filePath: String): String {
+        val path = getPath(filePath)
+
+        require(path.parent.exists()) {
+            "The directory must be created in an existing directory"
+        }
+        require(!path.exists()) {
+            "A file or directory already exists at path $filePath"
+        }
+
+        val createdPath = path.createDirectory()
+
+        log.info("Created directory at path $filePath")
 
         return createdPath.pathString
     }
@@ -94,7 +116,7 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLock
         val path = getPath(filePath)
 
         require(path.exists()) {
-            "No file at path $filePath"
+            "No file or directory at path $filePath"
         }
 
         path.deleteExisting()
@@ -106,7 +128,7 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLock
         val path = getPath(filePath)
 
         require(path.exists()) {
-            "No file at path $filePath"
+            "No file or directory at path $filePath"
         }
 
         return FileInfo(
@@ -115,6 +137,53 @@ class DefaultFilesRpcService(val filesProperties: FilesProperties, val filesLock
             size = path.fileSize(),
             isDirectory = path.isDirectory()
         )
+    }
+
+    override fun getDirectoryChildren(filePath: String): List<FileInfo> {
+        val path = getPath(filePath)
+
+        require(path.exists() && path.isDirectory()) {
+            "No directory at path $filePath"
+        }
+
+        return path.listDirectoryEntries().map { child ->
+            FileInfo(
+                fileName = child.name,
+                path = child.pathString,
+                size = child.fileSize(),
+                isDirectory = child.isDirectory()
+            )
+        }.sortedWith(
+            compareByDescending<FileInfo> { it.isDirectory }.thenBy { it.fileName }
+        )
+    }
+
+    override fun moveFile(source: String, destination: String) {
+        val sourcePath = getPath(source)
+        val destinationPath = getPath(destination)
+
+        require(sourcePath.exists()) {
+            "No file or directory at source $source"
+        }
+        require(destinationPath.notExists()) {
+            "Already existing file or directory at destination $destination"
+        }
+
+        sourcePath.moveTo(destinationPath)
+    }
+
+    override fun copyFile(source: String, destination: String) {
+        val sourcePath = getPath(source)
+        val destinationPath = getPath(destination)
+
+        require(sourcePath.exists()) {
+            "No file or directory at source $source"
+        }
+        require(destinationPath.notExists()) {
+            "Already existing file or directory at destination $destination"
+        }
+
+        sourcePath.copyTo(destinationPath)
     }
 
     private fun getPath(filePath: String): Path =
