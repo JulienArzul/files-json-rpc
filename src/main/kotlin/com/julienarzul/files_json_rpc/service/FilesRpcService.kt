@@ -1,5 +1,7 @@
 package com.julienarzul.files_json_rpc.service
 
+import com.julienarzul.files_json_rpc.model.FileInfo
+
 interface FilesRpcService {
     fun createFile(filePath: String): String
 

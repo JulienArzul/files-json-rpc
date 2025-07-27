@@ -1,6 +1,7 @@
 package com.julienarzul.files_json_rpc.service
 
 import com.julienarzul.files_json_rpc.config.FilesProperties
+import com.julienarzul.files_json_rpc.model.FileInfo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
