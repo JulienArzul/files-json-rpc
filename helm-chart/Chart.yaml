@@ -1,0 +1,7 @@
+apiVersion: v2
+name: files-json-rpc
+description: Helm chart deploying the files-json-rpc application to Kubernetes
+
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
