@@ -23,7 +23,7 @@ You first need to build the application, using the following command:
 Once the jar file has been built, you'll need to build your Docker image (changing the image name as fits):
 
 ```shell
-docker build -t julien.arzul/files-json-rpc .
+docker build -t julienarz/files-json-rpc .
 ```
 
 By default, the Docker image tries to find the 1.0.0 release of the app (which the current version built). But you can override which JAR you want to use for building the image by using the `JAR_FILE` argument.
@@ -34,7 +34,7 @@ The port 8080 should be exposed on the Docker container. In order to persist the
 
 Example:
 ```shell
-docker run -p 8080:8080 --volume files-rpc-json:/home/files_app julien.arzul/files-json-rpc
+docker run -p 8080:8080 --volume files-rpc-json:/home/files_app julienarz/files-json-rpc
 ```
 
 ## Calling an endpoint
