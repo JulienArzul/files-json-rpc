@@ -106,9 +106,8 @@ autoscaling:
 # Additional volumes on the output Deployment definition.
 volumes:
  - name: files-json-rpc
-   hostPath:
-     path: /files_app
-     type: DirectoryOrCreate
+   persistentVolumeClaim:
+     claimName: storage-pvc
 #   secret:
 #     secretName: mysecret
 #     optional: false

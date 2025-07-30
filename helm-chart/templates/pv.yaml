@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-volume
+spec:
+  capacity:
+    storage: 256Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  nfs:
+    # Minikube's Gateway IP
+    server: 192.168.49.1
+    # Folder exported by nfsd running locally
+    # /etc/exports:
+    # /Users/julien.arzul/tmp             192.168.49.0
+    path: "/Users/julien.arzul/tmp"
