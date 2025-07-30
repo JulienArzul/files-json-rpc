@@ -8,6 +8,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.nio.file.Paths
+import javax.swing.filechooser.FileSystemView
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.createDirectory
@@ -259,6 +260,32 @@ class DefaultFilesRpcServiceTest {
 
         assertEquals(20, actualFilePath.fileSize())
         assertEquals("first_text with more", actualFilePath.bufferedReader().use { it.readText() })
+    }
+
+    @Test
+    fun createFileOutsideOfRootDirectory() {
+        val relativePath = "../test.txt"
+        assertThrows<java.lang.IllegalArgumentException> {
+            underTest.createFile(relativePath)
+        }
+
+        val absolutePath = "${FileSystemView.getFileSystemView().homeDirectory.absolutePath}/test.txt"
+        assertThrows<java.lang.IllegalArgumentException> {
+            underTest.createFile(absolutePath)
+        }
+    }
+
+    @Test
+    fun canCeateFilesWithAbsolutePath() {
+        val relativePath = "../test.txt"
+        assertThrows<java.lang.IllegalArgumentException> {
+            underTest.createFile(relativePath)
+        }
+
+        val absolutePath = "${FileSystemView.getFileSystemView().homeDirectory.absolutePath}/test.txt"
+        assertThrows<java.lang.IllegalArgumentException> {
+            underTest.createFile(absolutePath)
+        }
     }
 
     private fun withDirectory(directoryPath: String) {

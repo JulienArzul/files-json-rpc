@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.absolute
 
 @Service
 class DefaultFilesRpcService(
@@ -24,19 +25,19 @@ class DefaultFilesRpcService(
     }
 
     override fun createFile(filePath: String): String {
-        val path = getPath(filePath)
+        val path = validateAndGetPath(filePath)
 
         return fileWriter.createFile(path)
     }
 
     override fun createDirectory(filePath: String): String {
-        val path = getPath(filePath)
+        val path = validateAndGetPath(filePath)
 
         return fileWriter.createDirectory(path)
     }
 
     override fun appendToFile(filePath: String, textToAppend: String) {
-        val path = getPath(filePath)
+        val path = validateAndGetPath(filePath)
 
         fileWriter.appendToFile(path, textToAppend)
     }
@@ -46,43 +47,52 @@ class DefaultFilesRpcService(
     }
 
     override fun readFile(filePath: String, offset: Long, limit: Int): String {
-        val path = getPath(filePath)
+        val path = validateAndGetPath(filePath)
 
         return fileReader.readFile(path, offset, limit)
     }
 
     override fun deleteFile(filePath: String) {
-        val path = getPath(filePath)
+        val path = validateAndGetPath(filePath)
 
         return fileWriter.deleteFile(path)
     }
 
     override fun getFileInfo(filePath: String): FileInfo {
-        val path = getPath(filePath)
+        val path = validateAndGetPath(filePath)
 
         return fileReader.getFileInfo(path)
     }
 
     override fun getDirectoryChildren(filePath: String): List<FileInfo> {
-        val path = getPath(filePath)
+        val path = validateAndGetPath(filePath)
 
         return fileReader.getDirectoryChildren(path)
     }
 
     override fun moveFile(source: String, destination: String) {
         fileMovement.moveFile(
-            getPath(source),
-            getPath(destination)
+            validateAndGetPath(source),
+            validateAndGetPath(destination)
         )
     }
 
     override fun copyFile(source: String, destination: String) {
         fileMovement.copyFile(
-            getPath(source),
-            getPath(destination)
+            validateAndGetPath(source),
+            validateAndGetPath(destination)
         )
     }
 
-    private fun getPath(filePath: String): Path =
-        Paths.get(filesProperties.rootPath, filePath)
+    private fun validateAndGetPath(filePath: String): Path {
+        val rootPath = Paths.get(filesProperties.rootPath)
+
+        val path = rootPath.resolve(filePath)
+
+        require(path.normalize().absolute().startsWith(rootPath.normalize().absolute())) {
+            "Impossible to interact with a file outside of the application's root path"
+        }
+
+        return path
+    }
 }
