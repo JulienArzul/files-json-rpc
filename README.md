@@ -53,3 +53,13 @@ curl --request POST \
   "id": 1
 }'
 ```
+
+# Helm chart
+
+The helm chart provided allows to deploy the application in Kubernetes.
+
+It currently contains some hardcoded values in `values.yaml`:
+- it's pulling the image from my personal Docker Hub for simplicity
+- it's defining a Persistent Volume that needs to have been configured in the values before deploying this chart
+  - the persistent volume needs to be a nfs server
+  - with the current value, it's accessed through my local Minikube's IP
