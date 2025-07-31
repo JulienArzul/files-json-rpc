@@ -93,7 +93,7 @@ class DefaultFilesRpcServiceTest {
         val result = underTest.getFileInfo(directoryPath)
 
         val expectedFilePath = Paths.get(filesProperties.rootPath, directoryPath).pathString
-        val expected = FileInfo(fileName = "directory", path = expectedFilePath, size = 192, isDirectory = true)
+        val expected = createdExpectedDirectoryFileInfo(fileName = "directory", path = expectedFilePath)
         assertEquals(expected, result)
     }
 
@@ -106,17 +106,13 @@ class DefaultFilesRpcServiceTest {
 
         val expectedDirectoryPath = Paths.get(filesProperties.rootPath, directoryPath).pathString
         val expected = listOf(
-            FileInfo(
+            createdExpectedDirectoryFileInfo(
                 fileName = "subdirectory1",
                 path = "$expectedDirectoryPath/subdirectory1",
-                size = 64,
-                isDirectory = true
             ),
-            FileInfo(
+            createdExpectedDirectoryFileInfo(
                 fileName = "subdirectory2",
                 path = "$expectedDirectoryPath/subdirectory2",
-                size = 96,
-                isDirectory = true
             ),
             FileInfo(fileName = "file1", path = "$expectedDirectoryPath/file1", size = 4, isDirectory = false),
             FileInfo(fileName = "file3", path = "$expectedDirectoryPath/file3", size = 11, isDirectory = false),
@@ -286,6 +282,19 @@ class DefaultFilesRpcServiceTest {
         assertThrows<java.lang.IllegalArgumentException> {
             underTest.createFile(absolutePath)
         }
+    }
+
+    /**
+     * We can't hardcode the size of the directory in the test as it will be dependent on the OS the test is run on.
+     * Instead, we need to dynamically assign the actual file size that will be returned by the Java nio API
+     */
+    private fun createdExpectedDirectoryFileInfo(fileName: String, path: String): FileInfo {
+        return FileInfo(
+            fileName = fileName,
+            path = path,
+            isDirectory = true,
+            size = Paths.get(path).fileSize()
+        )
     }
 
     private fun withDirectory(directoryPath: String) {
