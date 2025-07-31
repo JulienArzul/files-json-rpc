@@ -10,9 +10,5 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: standard
   nfs:
-    # Minikube's Gateway IP
-    server: 192.168.49.1
-    # Folder exported by nfsd running locally
-    # /etc/exports:
-    # /Users/julien.arzul/tmp             192.168.49.0
-    path: "/Users/julien.arzul/tmp"
+    server: {{ .Values.nfsServer.server }}
+    path: {{ .Values.nfsServer.path }}

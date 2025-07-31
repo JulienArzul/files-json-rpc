@@ -19,6 +19,14 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+nfsServer:
+  # Minikube's Gateway IP
+  server: 192.168.49.1
+  # Folder exported by nfsd running locally
+  # /etc/exports:
+  # /Users/julien.arzul/tmp             192.168.49.0
+  path: "/Users/julien.arzul/tmp"
+
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created
@@ -115,6 +123,7 @@ volumes:
 # Additional volumeMounts on the output Deployment definition.
 volumeMounts:
  - name: files-json-rpc
+   # This is the default path used by the application. It can be overriden by adding the arg FILES_ROOT_PATH when running the Docker container
    mountPath: "/home/files_app"
 #   readOnly: true
 
