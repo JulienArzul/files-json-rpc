@@ -11,6 +11,9 @@ import kotlin.io.path.pathString
 @Component
 class FileMovement {
 
+    /**
+     * ⚠️ The current implementation doesn't allow to move non-empty directories
+     */
     fun moveFile(sourcePath: Path, destinationPath: Path) {
         require(sourcePath.exists()) {
             "No file or directory at source ${sourcePath.pathString}"
@@ -22,6 +25,9 @@ class FileMovement {
         sourcePath.moveTo(destinationPath)
     }
 
+    /**
+     * ⚠️ The current implementation doesn't allow to move non-empty directories
+     */
     fun copyFile(sourcePath: Path, destinationPath: Path) {
         require(sourcePath.exists()) {
             "No file or directory at source ${sourcePath.pathString}"
