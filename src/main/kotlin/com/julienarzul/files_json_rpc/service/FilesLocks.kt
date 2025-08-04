@@ -14,15 +14,17 @@ import kotlin.io.path.absolutePathString
 
 private data class LockWrapper(
     private val lock: Lock = ReentrantLock(),
-    private val _numberOfThreadsInQueue: AtomicInteger = AtomicInteger(1),
+    private val _numberOfThreadsInQueue: AtomicInteger = AtomicInteger(0),
 ) {
     val numberOfThreadsInQueue: Int = _numberOfThreadsInQueue.get()
 
-    fun lock() {
+    fun lock(): LockWrapper {
         // Increment the number of threads in queue before potentially blocking to acquire the lock
         _numberOfThreadsInQueue.incrementAndGet()
 
         lock.lock()
+
+        return this
     }
 
     /**
@@ -49,8 +51,10 @@ class FilesLocks {
         ConcurrentHashMap<String, LockWrapper>()
 
     fun lockFile(filePath: Path) {
-        val lock = locks.computeIfAbsent(getKeyFromPath(filePath), { key -> LockWrapper() })
-        lock.lock()
+        locks.compute(
+            getKeyFromPath(filePath),
+            { key, value -> if (value == null) LockWrapper().lock() else value.lock() }
+        )
 
         log.info("Lock acquired for path: $filePath")
     }
@@ -67,7 +71,8 @@ class FilesLocks {
         if (lockWrapper.numberOfThreadsInQueue == 0) {
             // Removes the lock from the Map only if no other threads
             // has tried to acquire the lock in the meantime
-            locks.compute(key,
+            locks.compute(
+                key,
                 { key, value ->
                     if (value?.numberOfThreadsInQueue == 0) null else value
                 }
